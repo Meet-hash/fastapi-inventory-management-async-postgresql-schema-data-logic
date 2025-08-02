@@ -1,0 +1,35 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=stockuser
+      - POSTGRES_PASSWORD=stockpass
+      - POSTGRES_DB=stockdb
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+  fastapi:
+    build: ./app
+    volumes:
+      - ./app:/code
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=stockdb
+      - DB_USER=stockuser
+      - DB_PASSWORD=stockpass
+    ports:
+      - "8001:8000"
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+    networks:
+      - backend
+volumes:
+  pgdata:
+networks:
+  backend:
